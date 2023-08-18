@@ -1,9 +1,15 @@
 import 'package:boulder_app/dashboard.dart';
 import 'package:boulder_app/reset_password.dart';
 import 'package:boulder_app/signup.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -36,40 +42,24 @@ class _LoginPage extends State<LoginPage> {
   final _emailPadding = const EdgeInsets.symmetric(horizontal: 15);
   final _pwdPadding = const EdgeInsets.only(
       left: 15.0, right: 15.0, top: 15, bottom: 0);
+  final _btnPadding = const EdgeInsets.symmetric(vertical: 16.0);
 
-  final _email = TextEditingController();
-  final _pwd = TextEditingController();
-  bool _emailValidate = false;
-  bool _pwdValidate = false;
+  final _emailTextController = TextEditingController();
+  final _pwdTextController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  void _handleLogin(BuildContext context) async {
+    String email = _emailTextController.text.trim();
+    String password = _pwdTextController.text.trim();
+
+
+  }
 
   @override
   void dispose() {
-    _email.dispose();
-    _pwd.dispose();
+    _emailTextController.dispose();
+    _pwdTextController.dispose();
     super.dispose();
-  }
-
-  void checkTextState(){
-    if(_email.text.isEmpty){
-      setState(() {
-        _emailValidate = false;
-      });
-    }
-    else {
-      setState(() {
-        _emailValidate = true;
-      });
-    }
-    if(_pwd.text.isEmpty){
-      setState(() {
-        _pwdValidate = false;
-      });
-    }
-    else {
-      setState(() {
-        _pwdValidate = true;
-      });
-    }
   }
 
   @override
@@ -81,65 +71,48 @@ class _LoginPage extends State<LoginPage> {
           children: <Widget>[
             Padding(
               padding: _emailPadding,
-              child: TextField(
-                controller: _email,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  errorText: !(_emailValidate) ? 'Email cannot be empty' : null,
+              child: TextFormField(
+                controller: _emailTextController,
+                decoration: const InputDecoration(
+                  labelText: 'Email'
                 ),
+                validator: (String? value) {
+                  if(value!.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)){
+                    return "Please enter a valid Email Address!";
+                  }else{
+                    return null;
+                  }
+                },
               ),
             ),
             Padding(
               padding: _pwdPadding,
-              child: TextField(
+              child: TextFormField(
                 obscureText: true,
-                controller: _pwd,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  errorText: !(_pwdValidate) ? 'Password cannot be empty' : null,
+                controller: _pwdTextController,
+                decoration: const InputDecoration(
+                    labelText: 'Password'
                 ),
-              ),
-            ),
-            TextButton(
-              onPressed: (){
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => const ResetPassword()));
-              },
-              child: const Text(
-                'Forgot Password',
-                style: TextStyle(color: Colors.blue, fontSize: 15),
-              ),
-            ),
-            Container(
-              height: 50,
-              width: 250,
-              decoration: BoxDecoration(
-                  color: Colors.blue, borderRadius: BorderRadius.circular(20)),
-              child: FloatingActionButton.small(
-                heroTag: 'login-btn',
-                onPressed: () {
-                  checkTextState();
-                  if(_emailValidate && _pwdValidate){
-                    Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => const Dashboard()));
+                validator: (String? value) {
+                  if(value!.isEmpty){
+                    return "Please enter your Password!";
+                  }else{
+                    return null;
                   }
                 },
-                child: const Text(
-                  'Login',
-                  style: TextStyle(color: Colors.white, fontSize: 25),
-                ),
               ),
             ),
-            const SizedBox(
-              height: 130,
+            Padding(
+              padding: _btnPadding,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _handleLogin(context);
+                  }
+                },
+                child: const Text('Login'),
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => const SignUp()));
-              },
-              child: const Text('Are you new to the App? Sign up here!')
-            )
           ],
         ),
       ),
