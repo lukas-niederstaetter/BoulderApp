@@ -1,4 +1,6 @@
 import 'package:boulder_app/dashboard.dart';
+import 'package:boulder_app/reset_password.dart';
+import 'package:boulder_app/signup.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'BoulderFriend',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -100,7 +102,8 @@ class _LoginPage extends State<LoginPage> {
             ),
             TextButton(
               onPressed: (){
-                //TODO FORGOT PASSWORD SCREEN GOES HERE
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => const ResetPassword()));
               },
               child: const Text(
                 'Forgot Password',
@@ -127,6 +130,16 @@ class _LoginPage extends State<LoginPage> {
                 ),
               ),
             ),
+            const SizedBox(
+              height: 130,
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => const SignUp()));
+              },
+              child: const Text('Are you new to the App? Sign up here!')
+            )
           ],
         ),
       ),
