@@ -1,7 +1,10 @@
-import 'package:boulder_app/dashboard.dart';
-import 'package:boulder_app/reset_password.dart';
-import 'package:boulder_app/signup.dart';
+import 'package:boulder_app/pages/dashboard.dart';
+import 'package:boulder_app/login/reset_password.dart';
+import 'package:boulder_app/login/signup.dart';
+import 'package:boulder_app/service/login_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
@@ -49,10 +52,20 @@ class _LoginPage extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void _handleLogin(BuildContext context) async {
-    String email = _emailTextController.text.trim();
-    String password = _pwdTextController.text.trim();
+    try {
+      String email = _emailTextController.text.trim();
+      String password = _pwdTextController.text.trim();
 
+      LoginService loginService = LoginService();
+      User? user = await loginService.login(email, password);
+      if(user != null){
 
+      }
+    } on FirebaseAuthException catch (exception) {
+      if (kDebugMode) {
+        print(exception.message);
+      }
+    }
   }
 
   @override
@@ -66,55 +79,58 @@ class _LoginPage extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: _emailPadding,
-              child: TextFormField(
-                controller: _emailTextController,
-                decoration: const InputDecoration(
-                  labelText: 'Email'
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: _emailPadding,
+                child: TextFormField(
+                  controller: _emailTextController,
+                  decoration: const InputDecoration(
+                      labelText: 'Email'
+                  ),
+                  validator: (String? value) {
+                    if(value!.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)){
+                      return "Please enter a valid Email Address!";
+                    }else{
+                      return null;
+                    }
+                  },
                 ),
-                validator: (String? value) {
-                  if(value!.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)){
-                    return "Please enter a valid Email Address!";
-                  }else{
-                    return null;
-                  }
-                },
               ),
-            ),
-            Padding(
-              padding: _pwdPadding,
-              child: TextFormField(
-                obscureText: true,
-                controller: _pwdTextController,
-                decoration: const InputDecoration(
-                    labelText: 'Password'
+              Padding(
+                padding: _pwdPadding,
+                child: TextFormField(
+                  obscureText: true,
+                  controller: _pwdTextController,
+                  decoration: const InputDecoration(
+                      labelText: 'Password'
+                  ),
+                  validator: (String? value) {
+                    if(value!.isEmpty){
+                      return "Please enter your Password!";
+                    }else{
+                      return null;
+                    }
+                  },
                 ),
-                validator: (String? value) {
-                  if(value!.isEmpty){
-                    return "Please enter your Password!";
-                  }else{
-                    return null;
-                  }
-                },
               ),
-            ),
-            Padding(
-              padding: _btnPadding,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _handleLogin(context);
-                  }
-                },
-                child: const Text('Login'),
+              Padding(
+                padding: _btnPadding,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _handleLogin(context);
+                    }
+                  },
+                  child: const Text('Login'),
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        )
       ),
     );
   }
