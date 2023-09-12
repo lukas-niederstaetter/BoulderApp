@@ -1,12 +1,13 @@
+import 'dart:js_interop';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class LoginService {
-  final _authInstance = FirebaseAuth.instance;
-
   Future<User?> login(String email, String password) async {
+    var authInstance = FirebaseAuth.instance;
     try {
-      final credentials = await _authInstance.signInWithEmailAndPassword(
+      final credentials = await authInstance.signInWithEmailAndPassword(
         email: email,
         password: password);
       return credentials.user;
@@ -16,5 +17,28 @@ class LoginService {
       }
     }
     return null;
+  }
+
+  void logout(User currentUser) async {
+    if(currentUser.emailVerified && currentUser.metadata.creationTime != null){
+      var authService = FirebaseAuth.instance;
+      try {
+        await authService.signOut();
+      } on FirebaseAuthException catch (exception) {
+        if (kDebugMode) {
+          print(exception.message);
+        }
+      } finally {
+        authService.authStateChanges();
+      }
+    }
+  }
+
+  bool resetPassword(String newPassword){
+    if(newPassword.isNotEmpty && !newPassword.isUndefinedOrNull){
+      return true;
+    }
+
+    return false;
   }
 }
