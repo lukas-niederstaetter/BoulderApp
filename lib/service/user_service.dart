@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -35,7 +33,7 @@ class LoginService {
   }
 
   bool resetPassword(String newPassword){
-    if(newPassword.isNotEmpty && !newPassword.isUndefinedOrNull){
+    if(newPassword.isNotEmpty){
       return true;
     }
 
