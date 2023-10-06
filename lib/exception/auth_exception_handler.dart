@@ -25,8 +25,12 @@ class AuthExceptionHandler {
       case "ERROR_EMAIL_ALREADY_IN_USE":
         status = AuthResultStatus.emailAlreadyExists;
         break;
+      case "INVALID_LOGIN_CREDENTIALS":
+        status = AuthResultStatus.invalidLoginCredentials;
+        break;
       default:
         status = AuthResultStatus.undefined;
+        break;
     }
     return status;
   }
@@ -58,9 +62,14 @@ class AuthExceptionHandler {
         errorMessage =
         "The email has already been registered. Please login or reset your password.";
         break;
+      case AuthResultStatus.invalidLoginCredentials:
+        errorMessage =
+            "Wrong email or password. Please check your credentials and try again.";
+        break;
       default:
         errorMessage = "An undefined Error happened. We are trying to resolve it. "
             "Please stand by...";
+        break;
     }
     return errorMessage;
   }

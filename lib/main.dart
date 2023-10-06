@@ -67,6 +67,8 @@ class _MyApp extends State<MyApp> {
             theme: Styles.themeData(themeChangeProvider.darkTheme, context),
             home: const LoginPage(title: 'Climbr'),
             routes: {
+              "default": (context) =>
+              const LoginPage(title: 'Climbr'),
               "dashboard": (context) =>
                   const Dashboard(title: 'Climbr'),
               "signUp": (context) =>
@@ -104,39 +106,36 @@ class _LoginPage extends State<LoginPage> {
   bool isDeviceConnected = false;
   bool isAlertSet = false;
 
-  _login(String email, String password) async {
+  _login(String email, String password, BuildContext context) async {
     final status = await UserService().login(
         email: email, password: password);
     if (status == AuthResultStatus.successful) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       Navigator.pushNamed(context, "dashboard");
     } else {
-      final errorMsg = AuthExceptionHandler.generateExceptionMessage(
-          status);
-      showAlertDialog(BuildContext context) {
-        // set up the button
-        Widget okButton = TextButton(
-          child: const Text("OK"),
-          onPressed: () { },
-        );
-
-        // set up the AlertDialog
-        AlertDialog alert = AlertDialog(
-          title: const Text("Error"),
-          content: Text(errorMsg),
-          actions: [
-            okButton,
+      final _errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Login: Error'),
+          content: Text(_errorMsg),
+          actions: <Widget>[
+            TextButton(
+              onPressed: ()
+              {
+                if (!context.mounted) {
+                  return;
+                }
+                Navigator.pop(context, 'default');
+              },
+              child: const Text('OK'),
+            ),
           ],
-        );
+        ),
+      );
 
-        // show the dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          },
-        );
-      }
     }
   }
 
@@ -245,7 +244,8 @@ class _LoginPage extends State<LoginPage> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             _login(_emailTextController.text,
-                              _pwdTextController.text);
+                              _pwdTextController.text, context);
+
                           }
                         },
                         style: ElevatedButton.styleFrom(
