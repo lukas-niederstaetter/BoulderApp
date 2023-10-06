@@ -1,42 +1,42 @@
+import 'package:boulder_app/exception/auth_exception_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import '../exception/auth_result_status.dart';
 
 class LoginService {
-  Future<User?> login(String email, String password) async {
-    var authInstance = FirebaseAuth.instance;
+  final _auth = FirebaseAuth.instance;
+  late AuthResultStatus _status;
+
+  Future<AuthResultStatus> createUserAccount({email, password}) async {
     try {
-      final credentials = await authInstance.signInWithEmailAndPassword(
-        email: email,
-        password: password);
-      return credentials.user;
-    } on FirebaseAuthException catch (exception) {
-      if (kDebugMode) {
-        print(exception.message);
+      var authResult = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      if(authResult.user != null){
+        _status = AuthResultStatus.successful;
       }
+      else {
+        _status = AuthResultStatus.undefined;
+      }
+    } catch (e) {
+      _status = AuthExceptionHandler.handleException(e);
     }
-    return null;
+    return _status;
   }
 
-  void logout(User currentUser) async {
-    if(currentUser.emailVerified && currentUser.metadata.creationTime != null){
-      var authService = FirebaseAuth.instance;
-      try {
-        await authService.signOut();
-      } on FirebaseAuthException catch (exception) {
-        if (kDebugMode) {
-          print(exception.message);
-        }
-      } finally {
-        authService.authStateChanges();
+  Future<AuthResultStatus> login({email, password}) async {
+    try {
+      var authResult = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if(authResult.user != null){
+        _status = AuthResultStatus.successful;
       }
+      else {
+        _status = AuthResultStatus.undefined;
+      }
+    } catch (e) {
+      _status = AuthExceptionHandler.handleException(e);
     }
+    return _status;
   }
 
-  bool resetPassword(String newPassword){
-    if(newPassword.isNotEmpty){
-      return true;
-    }
-
-    return false;
+  void logoutUser(){
+    _auth.signOut();
   }
 }
