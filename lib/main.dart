@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boulder_app/exception/auth_result_status.dart';
 import 'package:boulder_app/login/reset_password.dart';
 import 'package:boulder_app/login/signup.dart';
 import 'package:boulder_app/pages/dashboard.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
+import 'exception/auth_exception_handler.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -102,24 +104,39 @@ class _LoginPage extends State<LoginPage> {
   bool isDeviceConnected = false;
   bool isAlertSet = false;
 
-  Future<bool> _handleLogin(BuildContext context) async {
-    try {
-      String email = _emailTextController.text.trim();
-      String password = _pwdTextController.text.trim();
+  _login(String email, String password) async {
+    final status = await UserService().login(
+        email: email, password: password);
+    if (status == AuthResultStatus.successful) {
+      if (!context.mounted) return;
+      Navigator.pushNamed(context, "dashboard");
+    } else {
+      final errorMsg = AuthExceptionHandler.generateExceptionMessage(
+          status);
+      showAlertDialog(BuildContext context) {
+        // set up the button
+        Widget okButton = TextButton(
+          child: const Text("OK"),
+          onPressed: () { },
+        );
 
-      LoginService loginService = LoginService();
-      User? user = await loginService.login(email, password);
-      if(user != null){
-        return true;
+        // set up the AlertDialog
+        AlertDialog alert = AlertDialog(
+          title: const Text("Error"),
+          content: Text(errorMsg),
+          actions: [
+            okButton,
+          ],
+        );
+
+        // show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
       }
-      else {
-        return false;
-      }
-    } on FirebaseAuthException catch (exception) {
-      if (kDebugMode) {
-        print(exception.message);
-      }
-      return false;
     }
   }
 
@@ -195,8 +212,8 @@ class _LoginPage extends State<LoginPage> {
                         labelText: 'Email'
                     ),
                     validator: (String? value) {
-                      if(value!.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)){
-                        return "Please enter a valid Email Address!";
+                      if(value!.isEmpty){
+                        return "Please enter your Email!";
                       }else{
                         return null;
                       }
@@ -227,11 +244,8 @@ class _LoginPage extends State<LoginPage> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            bool check = await _handleLogin(context);
-                            if(check){
-                              if (!context.mounted) return;
-                              Navigator.pushNamed(context, "dashboard");
-                            }
+                            _login(_emailTextController.text,
+                              _pwdTextController.text);
                           }
                         },
                         style: ElevatedButton.styleFrom(

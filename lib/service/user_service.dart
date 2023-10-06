@@ -2,7 +2,7 @@ import 'package:boulder_app/exception/auth_exception_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../exception/auth_result_status.dart';
 
-class LoginService {
+class UserService {
   final _auth = FirebaseAuth.instance;
   late AuthResultStatus _status;
 
