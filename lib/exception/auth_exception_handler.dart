@@ -1,28 +1,30 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'auth_result_status.dart';
 
 class AuthExceptionHandler {
   static handleException(e){
     AuthResultStatus status;
     switch(e.code){
-      case "ERROR_INVALID_EMAIL":
+      case "INVALID_EMAIL":
         status = AuthResultStatus.invalidEmail;
         break;
-      case "ERROR_WRONG_PASSWORD":
+      case "WRONG_PASSWORD":
         status = AuthResultStatus.wrongPassword;
         break;
-      case "ERROR_USER_NOT_FOUND":
+      case "USER_NOT_FOUND":
         status = AuthResultStatus.userNotFound;
         break;
-      case "ERROR_USER_DISABLED":
+      case "USER_DISABLED":
         status = AuthResultStatus.userDisabled;
         break;
-      case "ERROR_TOO_MANY_REQUESTS":
+      case "TOO_MANY_REQUESTS":
         status = AuthResultStatus.tooManyRequests;
         break;
-      case "ERROR_OPERATION_NOT_ALLOWED":
+      case "OPERATION_NOT_ALLOWED":
         status = AuthResultStatus.operationNotAllowed;
         break;
-      case "ERROR_EMAIL_ALREADY_IN_USE":
+      case "EMAIL_ALREADY_IN_USE":
         status = AuthResultStatus.emailAlreadyExists;
         break;
       case "INVALID_LOGIN_CREDENTIALS":

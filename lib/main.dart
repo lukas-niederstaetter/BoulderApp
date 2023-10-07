@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:boulder_app/exception/auth_result_status.dart';
 import 'package:boulder_app/login/reset_password.dart';
 import 'package:boulder_app/login/signup.dart';
@@ -10,7 +9,6 @@ import 'package:boulder_app/themes/dark_theme_styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
@@ -106,7 +104,10 @@ class _LoginPage extends State<LoginPage> {
   bool isDeviceConnected = false;
   bool isAlertSet = false;
 
-  _login(String email, String password, BuildContext context) async {
+  _login(BuildContext context) async {
+    String email = _emailTextController.text.trim();
+    String password = _pwdTextController.text.trim();
+
     final status = await UserService().login(
         email: email, password: password);
     if (status == AuthResultStatus.successful) {
@@ -115,12 +116,15 @@ class _LoginPage extends State<LoginPage> {
       }
       Navigator.pushNamed(context, "dashboard");
     } else {
-      final _errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+      final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+      if (!context.mounted) {
+        return;
+      }
       showDialog<String>(
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('Login: Error'),
-          content: Text(_errorMsg),
+          content: Text(errorMsg),
           actions: <Widget>[
             TextButton(
               onPressed: ()
@@ -128,14 +132,15 @@ class _LoginPage extends State<LoginPage> {
                 if (!context.mounted) {
                   return;
                 }
-                Navigator.pop(context, 'default');
+                Navigator.of(context).pop(false);
+                _emailTextController.clear();
+                _pwdTextController.clear();
               },
               child: const Text('OK'),
             ),
           ],
         ),
       );
-
     }
   }
 
@@ -191,7 +196,7 @@ class _LoginPage extends State<LoginPage> {
     _emailTextController.dispose();
     _pwdTextController.dispose();
     subscription.cancel();
-    dispose();
+    super.dispose();
   }
 
   @override
@@ -243,9 +248,7 @@ class _LoginPage extends State<LoginPage> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            _login(_emailTextController.text,
-                              _pwdTextController.text, context);
-
+                            _login(context);
                           }
                         },
                         style: ElevatedButton.styleFrom(
