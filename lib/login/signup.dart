@@ -21,6 +21,36 @@ class _SignUpPage extends State<SignUp>{
   final _pwdTextController = TextEditingController();
   final _pwdCheckTextController = TextEditingController();
 
+  _validateConfirmPassword(){
+    var password = _pwdTextController.text.trim();
+    var inputPwd = _pwdCheckTextController.text.trim();
+
+    if(password.isEmpty){
+      return "Please confirm your Password";
+    }
+    else if(password.compareTo(inputPwd) != 0){
+      return "Password not confirmed";
+    }
+    else {
+      return null;
+    }
+  }
+  
+  _validatePassword(){
+    var password = _pwdTextController.text.trim();
+    RegExp regex =
+      RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
+    if (password.isEmpty) {
+      return 'Please enter your Password';
+    } else {
+      if (!regex.hasMatch(password)) {
+        return 'Please enter a valid Password';
+      } else {
+        return null;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +96,48 @@ class _SignUpPage extends State<SignUp>{
                     }
                   },
                 ),
-              )
+              ),
+              Padding(
+                padding: _emailPadding,
+                child: TextFormField(
+                  controller: _emailTextController,
+                  decoration: const InputDecoration(
+                      labelText: 'Email'
+                  ),
+                  validator: (String? value) {
+                    if(value!.isEmpty) {
+                      return "Please enter your Email";
+                    }
+                    else {
+                      return null;
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: _pwdPadding,
+                child: TextFormField(
+                  controller: _pwdTextController,
+                  decoration: const InputDecoration(
+                      labelText: 'Password'
+                  ),
+                  validator: (String? value) {
+                    return _validatePassword();
+                  },
+                ),
+              ),
+              Padding(
+                padding: _namesPadding,
+                child: TextFormField(
+                  controller: _surnameTextController,
+                  decoration: const InputDecoration(
+                      labelText: 'Confirm Password'
+                  ),
+                  validator: (String? value) {
+                      return _validateConfirmPassword();
+                  },
+                ),
+              ),
             ],
           ),
         ),
