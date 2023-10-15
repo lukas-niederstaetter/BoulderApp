@@ -9,7 +9,9 @@ class UserService {
   Future<AuthResultStatus> createUserAccount({email, password}) async {
     try {
       var authResult = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      if(authResult.user != null){
+      final user = authResult.user;
+      if(user != null){
+        await user.sendEmailVerification();
         _status = AuthResultStatus.successful;
       }
       else {
@@ -24,11 +26,12 @@ class UserService {
   Future<AuthResultStatus> login({email, password}) async {
     try {
       var authResult = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      if(authResult.user != null){
+      final user = authResult.user;
+      if(user!.emailVerified){
         _status = AuthResultStatus.successful;
       }
       else {
-        _status = AuthResultStatus.undefined;
+        _status = AuthResultStatus.invalidEmail;
       }
     } catch (e) {
       _status = AuthExceptionHandler.handleException(e);

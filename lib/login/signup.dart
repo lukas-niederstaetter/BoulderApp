@@ -1,4 +1,8 @@
+import 'package:boulder_app/exception/auth_result_status.dart';
+import 'package:boulder_app/service/user_service.dart';
 import 'package:flutter/material.dart';
+
+import '../exception/auth_exception_handler.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required title});
@@ -48,6 +52,47 @@ class _SignUpPage extends State<SignUp>{
       } else {
         return null;
       }
+    }
+  }
+
+  _signUp(BuildContext context) async {
+    var email = _emailTextController.text.trim();
+    var password = _pwdTextController.text.trim();
+
+    AuthResultStatus status = await UserService().createUserAccount
+      (email: email, password: password);
+    if(status == AuthResultStatus.successful){
+      if (!context.mounted) {
+        return;
+      }
+      Navigator.pushNamed(context, 'default');
+    }
+    else {
+      final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+      if (!context.mounted) {
+        return;
+      }
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Sign Up: Error'),
+          content: Text(errorMsg),
+          actions: <Widget>[
+            TextButton(
+              onPressed: ()
+              {
+                if (!context.mounted) {
+                  return;
+                }
+                Navigator.of(context).pop(false);
+                _emailTextController.clear();
+                _pwdTextController.clear();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -118,6 +163,7 @@ class _SignUpPage extends State<SignUp>{
                 padding: _pwdPadding,
                 child: TextFormField(
                   controller: _pwdTextController,
+                  obscureText: true,
                   decoration: const InputDecoration(
                       labelText: 'Password'
                   ),
@@ -129,7 +175,8 @@ class _SignUpPage extends State<SignUp>{
               Padding(
                 padding: _namesPadding,
                 child: TextFormField(
-                  controller: _surnameTextController,
+                  controller: _pwdCheckTextController,
+                  obscureText: true,
                   decoration: const InputDecoration(
                       labelText: 'Confirm Password'
                   ),
@@ -137,6 +184,21 @@ class _SignUpPage extends State<SignUp>{
                       return _validateConfirmPassword();
                   },
                 ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    _signUp(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold
+                    )
+                ),
+                child: const Text('Sign Up'),
               ),
             ],
           ),
